@@ -149,6 +149,5 @@ namespace SnackGame3.Models
                     return false; 
                 }
             }
-        }
     }
 }
