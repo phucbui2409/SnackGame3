@@ -21,144 +21,131 @@ namespace SnackGame3.Forms
 
         private void InitializeComponent()
         {
-            label1 = new Label();
-            lblSubtitle = new Label();
-            btnChoi = new Button();
-            btnThanhTich = new Button();
-            btnHuongDan = new Button();
-            btnThoat = new Button();
-            btnSound = new Button();
-            SuspendLayout();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lblSubtitle = new System.Windows.Forms.Label();
+            this.btnChoi = new System.Windows.Forms.Button();
+            this.btnThanhTich = new System.Windows.Forms.Button();
+            this.btnHuongDan = new System.Windows.Forms.Button();
+            this.btnThoat = new System.Windows.Forms.Button();
+            this.btnSound = new System.Windows.Forms.Button();
+            this.SuspendLayout();
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 28F, FontStyle.Bold);
-            label1.ForeColor = Color.FromArgb(50, 205, 50);
-            label1.Location = new Point(97, 80);
-            label1.Name = "label1";
-            label1.Size = new Size(401, 62);
-            label1.TabIndex = 0;
-            label1.Text = "🐍 SNAKE GAME";
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 28F, System.Drawing.FontStyle.Bold);
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(205)))), ((int)(((byte)(50)))));
+            this.label1.Location = new System.Drawing.Point(97, 64);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(401, 62);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "🐍 SNAKE GAME";
             // 
             // lblSubtitle
             // 
-            lblSubtitle.AutoSize = true;
-            lblSubtitle.Font = new Font("Segoe UI", 11.25F, FontStyle.Italic);
-            lblSubtitle.ForeColor = Color.LightGray;
-            lblSubtitle.Location = new Point(140, 153);
-            lblSubtitle.Name = "lblSubtitle";
-            lblSubtitle.Size = new Size(313, 25);
-            lblSubtitle.TabIndex = 6;
-            lblSubtitle.Text = "Lập Trình Windows — Nhóm TamKa";
-            lblSubtitle.Click += lblSubtitle_Click;
+            this.lblSubtitle.AutoSize = true;
+            this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Italic);
+            this.lblSubtitle.ForeColor = System.Drawing.Color.LightGray;
+            this.lblSubtitle.Location = new System.Drawing.Point(155, 140);
+            this.lblSubtitle.Name = "lblSubtitle";
+            this.lblSubtitle.Size = new System.Drawing.Size(0, 25);
+            this.lblSubtitle.TabIndex = 6;
             // 
             // btnChoi
             // 
-            btnChoi.BackColor = Color.FromArgb(34, 139, 34);
-            btnChoi.Cursor = Cursors.Hand;
-            btnChoi.FlatAppearance.BorderSize = 0;
-            btnChoi.FlatStyle = FlatStyle.Flat;
-            btnChoi.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnChoi.ForeColor = Color.White;
-            btnChoi.Location = new Point(160, 240);
-            btnChoi.Margin = new Padding(3, 4, 3, 4);
-            btnChoi.Name = "btnChoi";
-            btnChoi.Size = new Size(251, 69);
-            btnChoi.TabIndex = 1;
-            btnChoi.Text = "🎮 Chơi Game";
-            btnChoi.UseVisualStyleBackColor = false;
-            btnChoi.Click += btnChoi_Click;
+            this.btnChoi.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(139)))), ((int)(((byte)(34)))));
+            this.btnChoi.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnChoi.FlatAppearance.BorderSize = 0;
+            this.btnChoi.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnChoi.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnChoi.ForeColor = System.Drawing.Color.White;
+            this.btnChoi.Location = new System.Drawing.Point(160, 192);
+            this.btnChoi.Name = "btnChoi";
+            this.btnChoi.Size = new System.Drawing.Size(251, 55);
+            this.btnChoi.TabIndex = 1;
+            this.btnChoi.Text = "🎮 Chơi Game";
+            this.btnChoi.UseVisualStyleBackColor = false;
             // 
             // btnThanhTich
             // 
-            btnThanhTich.BackColor = Color.FromArgb(34, 139, 34);
-            btnThanhTich.Cursor = Cursors.Hand;
-            btnThanhTich.FlatAppearance.BorderSize = 0;
-            btnThanhTich.FlatStyle = FlatStyle.Flat;
-            btnThanhTich.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnThanhTich.ForeColor = Color.White;
-            btnThanhTich.Location = new Point(160, 333);
-            btnThanhTich.Margin = new Padding(3, 4, 3, 4);
-            btnThanhTich.Name = "btnThanhTich";
-            btnThanhTich.Size = new Size(251, 69);
-            btnThanhTich.TabIndex = 2;
-            btnThanhTich.Text = "🏆 Bảng Thành Tích";
-            btnThanhTich.UseVisualStyleBackColor = false;
-            btnThanhTich.Click += btnThanhTich_Click;
+            this.btnThanhTich.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(139)))), ((int)(((byte)(34)))));
+            this.btnThanhTich.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnThanhTich.FlatAppearance.BorderSize = 0;
+            this.btnThanhTich.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnThanhTich.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnThanhTich.ForeColor = System.Drawing.Color.White;
+            this.btnThanhTich.Location = new System.Drawing.Point(160, 266);
+            this.btnThanhTich.Name = "btnThanhTich";
+            this.btnThanhTich.Size = new System.Drawing.Size(251, 55);
+            this.btnThanhTich.TabIndex = 2;
+            this.btnThanhTich.Text = "🏆 Bảng Thành Tích";
+            this.btnThanhTich.UseVisualStyleBackColor = false;
             // 
             // btnHuongDan
             // 
-            btnHuongDan.BackColor = Color.FromArgb(34, 139, 34);
-            btnHuongDan.Cursor = Cursors.Hand;
-            btnHuongDan.FlatAppearance.BorderSize = 0;
-            btnHuongDan.FlatStyle = FlatStyle.Flat;
-            btnHuongDan.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnHuongDan.ForeColor = Color.White;
-            btnHuongDan.Location = new Point(160, 427);
-            btnHuongDan.Margin = new Padding(3, 4, 3, 4);
-            btnHuongDan.Name = "btnHuongDan";
-            btnHuongDan.Size = new Size(251, 69);
-            btnHuongDan.TabIndex = 3;
-            btnHuongDan.Text = "📖 Hướng Dẫn";
-            btnHuongDan.UseVisualStyleBackColor = false;
-            btnHuongDan.Click += btnHuongDan_Click;
+            this.btnHuongDan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(139)))), ((int)(((byte)(34)))));
+            this.btnHuongDan.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnHuongDan.FlatAppearance.BorderSize = 0;
+            this.btnHuongDan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnHuongDan.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnHuongDan.ForeColor = System.Drawing.Color.White;
+            this.btnHuongDan.Location = new System.Drawing.Point(160, 342);
+            this.btnHuongDan.Name = "btnHuongDan";
+            this.btnHuongDan.Size = new System.Drawing.Size(251, 55);
+            this.btnHuongDan.TabIndex = 3;
+            this.btnHuongDan.Text = "📖 Hướng Dẫn";
+            this.btnHuongDan.UseVisualStyleBackColor = false;
             // 
             // btnThoat
             // 
-            btnThoat.BackColor = Color.FromArgb(160, 30, 30);
-            btnThoat.Cursor = Cursors.Hand;
-            btnThoat.FlatAppearance.BorderSize = 0;
-            btnThoat.FlatStyle = FlatStyle.Flat;
-            btnThoat.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnThoat.ForeColor = Color.White;
-            btnThoat.Location = new Point(160, 520);
-            btnThoat.Margin = new Padding(3, 4, 3, 4);
-            btnThoat.Name = "btnThoat";
-            btnThoat.Size = new Size(251, 69);
-            btnThoat.TabIndex = 4;
-            btnThoat.Text = "❌ Thoát";
-            btnThoat.UseVisualStyleBackColor = false;
-            btnThoat.Click += btnThoat_Click;
+            this.btnThoat.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
+            this.btnThoat.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnThoat.FlatAppearance.BorderSize = 0;
+            this.btnThoat.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnThoat.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.btnThoat.ForeColor = System.Drawing.Color.White;
+            this.btnThoat.Location = new System.Drawing.Point(160, 416);
+            this.btnThoat.Name = "btnThoat";
+            this.btnThoat.Size = new System.Drawing.Size(251, 55);
+            this.btnThoat.TabIndex = 4;
+            this.btnThoat.Text = "❌ Thoát";
+            this.btnThoat.UseVisualStyleBackColor = false;
             // 
             // btnSound
             // 
-            btnSound.BackColor = Color.FromArgb(40, 60, 80);
-            btnSound.Cursor = Cursors.Hand;
-            btnSound.FlatAppearance.BorderColor = Color.FromArgb(80, 120, 160);
-            btnSound.FlatStyle = FlatStyle.Flat;
-            btnSound.Font = new Font("Segoe UI", 9F);
-            btnSound.ForeColor = Color.FromArgb(50, 205, 50);
-            btnSound.Location = new Point(389, 20);
-            btnSound.Margin = new Padding(3, 4, 3, 4);
-            btnSound.Name = "btnSound";
-            btnSound.Size = new Size(149, 43);
-            btnSound.TabIndex = 5;
-            btnSound.Text = "🔊 Âm Thanh: BẬT";
-            btnSound.UseVisualStyleBackColor = false;
-            btnSound.Click += btnSound_Click;
+            this.btnSound.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(60)))), ((int)(((byte)(80)))));
+            this.btnSound.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSound.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(120)))), ((int)(((byte)(160)))));
+            this.btnSound.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSound.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnSound.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(205)))), ((int)(((byte)(50)))));
+            this.btnSound.Location = new System.Drawing.Point(389, 16);
+            this.btnSound.Name = "btnSound";
+            this.btnSound.Size = new System.Drawing.Size(149, 34);
+            this.btnSound.TabIndex = 5;
+            this.btnSound.Text = "🔊 Âm Thanh: BẬT";
+            this.btnSound.UseVisualStyleBackColor = false;
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(20, 20, 40);
-            ClientSize = new Size(571, 667);
-            Controls.Add(lblSubtitle);
-            Controls.Add(btnSound);
-            Controls.Add(btnThoat);
-            Controls.Add(btnHuongDan);
-            Controls.Add(btnThanhTich);
-            Controls.Add(btnChoi);
-            Controls.Add(label1);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            Margin = new Padding(3, 4, 3, 4);
-            MaximizeBox = false;
-            Name = "MainForm";
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "Snake Game - Nhóm 5";
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(20)))), ((int)(((byte)(40)))));
+            this.ClientSize = new System.Drawing.Size(571, 534);
+            this.Controls.Add(this.lblSubtitle);
+            this.Controls.Add(this.btnSound);
+            this.Controls.Add(this.btnThoat);
+            this.Controls.Add(this.btnHuongDan);
+            this.Controls.Add(this.btnThanhTich);
+            this.Controls.Add(this.btnChoi);
+            this.Controls.Add(this.label1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Snake Game - Nhóm 5";
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

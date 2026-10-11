@@ -30,27 +30,24 @@ namespace SnackGame3.Test
         private GameCanvas canvas;
         private Label lblScore;
         private Label lblGuide;
-        private Button btnBack;
-        private Button btnRestart;
 
-        // Khung Game Over
+        // Bảng In-game nhập tên & điều hướng khi Game Over
         private Panel pnlGameOverBox;
         private TextBox txtTenNguoiChoi;
         private Button btnLuuDiem;
         private Label lblThongBaoLuu;
+        private Button btnChoiLai;
+        private Button btnVeMenu;
 
         public GameTestForm()
         {
-            Text = "Snake Game - Thử nghiệm";
-            ClientSize = new Size(
-                COLS * CELL_SIZE + 40,
-                ROWS * CELL_SIZE + 100);
-
-            BackColor = GameConfig.BgColor;
-            StartPosition = FormStartPosition.CenterScreen;
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            KeyPreview = true;
+            this.Text = "Snack Game - Màn Chơi";
+            this.ClientSize = new Size(COLS * CELL_SIZE + 40, ROWS * CELL_SIZE + 90);
+            this.BackColor = GameConfig.BgColor;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.KeyPreview = true;
 
             InitUI();
 
@@ -67,179 +64,162 @@ namespace SnackGame3.Test
 
         private void InitUI()
         {
-            // Thanh công cụ phía trên
+            // Panel thanh trên cùng: Thiết kế gọn gàng, thanh thoát
             Panel topPanel = new Panel
             {
                 Location = new Point(20, 10),
-                Size = new Size(COLS * CELL_SIZE, 40),
-                BackColor = Color.FromArgb(30, 30, 50)
+                Size = new Size(COLS * CELL_SIZE, 35),
+                BackColor = Color.FromArgb(25, 25, 45)
             };
 
             lblScore = new Label
             {
-                Text = "🍎 Điểm: 0",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.FromArgb(50, 205, 50),
-                Location = new Point(10, 8),
+                Text = "🍎 ĐIỂM: 0",
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                ForeColor = Color.FromArgb(50, 220, 50),
+                Location = new Point(12, 6),
                 AutoSize = true
             };
 
             lblGuide = new Label
             {
-                Text = "[P]: Tạm dừng | [Space]: Chơi lại",
-                Font = new Font("Segoe UI", 9, FontStyle.Italic),
-                ForeColor = Color.LightGray,
-                Location = new Point(130, 11),
+                Text = "⏸️ [P]: Tạm dừng  |  🎮 [W,A,S,D] / [Mũi tên]: Di chuyển",
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                ForeColor = Color.FromArgb(170, 170, 200),
+                Location = new Point(160, 8),
                 AutoSize = true
-            };
-
-            btnRestart = new Button
-            {
-                Text = "Chơi Lại",
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(40, 120, 200),
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(90, 28),
-                Location = new Point(COLS * CELL_SIZE - 200, 6),
-                Cursor = Cursors.Hand
-            };
-
-            btnRestart.FlatAppearance.BorderSize = 0;
-            btnRestart.Click += (s, e) =>
-            {
-                SoundManager.PlayButtonClick();
-                RestartGame();
-            };
-
-            btnBack = new Button
-            {
-                Text = "Menu",
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(180, 40, 40),
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(80, 28),
-                Location = new Point(COLS * CELL_SIZE - 95, 6),
-                Cursor = Cursors.Hand
-            };
-
-            btnBack.FlatAppearance.BorderSize = 0;
-            btnBack.Click += (s, e) =>
-            {
-                SoundManager.PlayButtonClick();
-                Close();
             };
 
             topPanel.Controls.Add(lblScore);
             topPanel.Controls.Add(lblGuide);
-            topPanel.Controls.Add(btnRestart);
-            topPanel.Controls.Add(btnBack);
-            Controls.Add(topPanel);
+            this.Controls.Add(topPanel);
 
             // Bàn cờ
             canvas = new GameCanvas
             {
-                Location = new Point(20, 60),
-                Size = new Size(
-                    COLS * CELL_SIZE,
-                    ROWS * CELL_SIZE),
+                Location = new Point(20, 55),
+                Size = new Size(COLS * CELL_SIZE, ROWS * CELL_SIZE),
                 BackColor = Color.FromArgb(15, 15, 30)
             };
 
             canvas.Paint += Canvas_Paint;
             Controls.Add(canvas);
 
-            // Khung Game Over
+            // ==================== BẢNG POPUP GAME OVER ====================
             pnlGameOverBox = new Panel
             {
-                Size = new Size(360, 210),
-                BackColor = Color.FromArgb(30, 30, 55),
+                Size = new Size(380, 260),
+                BackColor = Color.FromArgb(28, 28, 50),
                 BorderStyle = BorderStyle.FixedSingle,
                 Visible = false
             };
-
-            pnlGameOverBox.Location = new Point(
-                (ClientSize.Width - 360) / 2,
-                (ClientSize.Height - 210) / 2);
+            // Căn giữa màn hình game
+            pnlGameOverBox.Location = new Point((this.ClientSize.Width - 380) / 2, (this.ClientSize.Height - 260) / 2 + 15);
 
             Label lblTieuDeOver = new Label
             {
-                Text = "GAME OVER",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(255, 70, 70),
+                Text = "💀 GAME OVER 💀",
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 75, 75),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(360, 35),
-                Location = new Point(0, 10)
+                Size = new Size(380, 38),
+                Location = new Point(0, 12)
             };
 
             lblThongBaoLuu = new Label
             {
                 Text = "Nhập tên của bạn để lưu kỷ lục:",
-                Font = new Font("Segoe UI", 10),
-                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                ForeColor = Color.LightGray,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Size = new Size(360, 25),
-                Location = new Point(0, 50)
+                Size = new Size(380, 25),
+                Location = new Point(0, 55)
             };
 
             txtTenNguoiChoi = new TextBox
             {
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                Size = new Size(240, 30),
-                Location = new Point(60, 85),
+                Size = new Size(240, 32),
+                Location = new Point(70, 85),
                 TextAlign = HorizontalAlignment.Center,
                 MaxLength = 20
             };
 
             btnLuuDiem = new Button
             {
-                Text = "Lưu Điểm",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Text = "💾 Lưu Điểm",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.White,
-                BackColor = Color.FromArgb(40, 160, 60),
+                BackColor = Color.FromArgb(35, 150, 60),
                 FlatStyle = FlatStyle.Flat,
-                Size = new Size(130, 38),
-                Location = new Point(45, 135),
+                Size = new Size(130, 36),
+                Location = new Point(125, 125),
                 Cursor = Cursors.Hand
             };
 
             btnLuuDiem.FlatAppearance.BorderSize = 0;
-            btnLuuDiem.Click += BtnLuuDiem_Click;
+            btnLuuDiem.Click += (s, e) =>
+            {
+                SoundManager.PlayButtonClick();
+                LuuDiemVaoBangXepHang(txtTenNguoiChoi.Text, score);
+                btnLuuDiem.Enabled = false;
+                btnLuuDiem.Text = "✅ Đã Lưu!";
+                lblThongBaoLuu.Text = $"Đã lưu thành tích: {score} điểm!";
+                lblThongBaoLuu.ForeColor = Color.FromArgb(50, 220, 50);
+            };
 
-            Button btnChoiLaiNhanh = new Button
+            // Nút Chơi Lại sau khi chết
+            btnChoiLai = new Button
             {
                 Text = "Chơi Lại",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 ForeColor = Color.White,
-                BackColor = Color.FromArgb(50, 120, 200),
+                BackColor = Color.FromArgb(40, 110, 200),
                 FlatStyle = FlatStyle.Flat,
-                Size = new Size(130, 38),
-                Location = new Point(185, 135),
+                Size = new Size(140, 42),
+                Location = new Point(35, 190),
                 Cursor = Cursors.Hand
             };
-
-            btnChoiLaiNhanh.FlatAppearance.BorderSize = 0;
-            btnChoiLaiNhanh.Click += (s, e) =>
+            btnChoiLai.FlatAppearance.BorderSize = 0;
+            btnChoiLai.Click += (s, e) =>
             {
                 SoundManager.PlayButtonClick();
                 RestartGame();
+            };
+
+            // Nút Về Menu sau khi chết
+            btnVeMenu = new Button
+            {
+                Text = "🔙 Về Menu",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(180, 45, 45),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(140, 42),
+                Location = new Point(205, 190),
+                Cursor = Cursors.Hand
+            };
+            btnVeMenu.FlatAppearance.BorderSize = 0;
+            btnVeMenu.Click += (s, e) =>
+            {
+                SoundManager.PlayButtonClick();
+                this.Close(); // Đóng form về menu và bật lại nhạc
             };
 
             pnlGameOverBox.Controls.Add(lblTieuDeOver);
             pnlGameOverBox.Controls.Add(lblThongBaoLuu);
             pnlGameOverBox.Controls.Add(txtTenNguoiChoi);
             pnlGameOverBox.Controls.Add(btnLuuDiem);
-            pnlGameOverBox.Controls.Add(btnChoiLaiNhanh);
+            pnlGameOverBox.Controls.Add(btnChoiLai);
+            pnlGameOverBox.Controls.Add(btnVeMenu);
 
             Controls.Add(pnlGameOverBox);
             pnlGameOverBox.BringToFront();
 
-            // Timer
-            gameTimer = new Timer
-            {
-                Interval = 120
-            };
+            // Timer game loop
+            gameTimer = new System.Windows.Forms.Timer();
+            gameTimer.Interval = 120;
+            gameTimer.Tick += GameTimer_Tick;
 
             gameTimer.Tick += GameTimer_Tick;
         }
@@ -253,11 +233,12 @@ namespace SnackGame3.Test
 
             pnlGameOverBox.Visible = false;
 
-            lblScore.Text = "🍎 Điểm: 0";
-            lblGuide.Text = "[P]: Tạm dừng | [Space]: Chơi lại";
-
-            btnLuuDiem.Enabled = true;
-            btnLuuDiem.Text = "Lưu Điểm";
+            currentDir = Direction.Right;
+            nextDir = Direction.Right;
+            score = 0;
+            isGameOver = false;
+            isPaused = false;
+            lblScore.Text = "🍎 ĐIỂM: 0";
 
             canvas.Invalidate();
             gameTimer.Start();
@@ -277,20 +258,37 @@ namespace SnackGame3.Test
         {
             if (isPaused || game == null || game.IsGameOver)
             {
+                case Direction.Up: newHead = new Point(head.X, head.Y - 1); break;
+                case Direction.Down: newHead = new Point(head.X, head.Y + 1); break;
+                case Direction.Left: newHead = new Point(head.X - 1, head.Y); break;
+                case Direction.Right: newHead = new Point(head.X + 1, head.Y); break;
+            }
+
+            // Đâm tường
+            if (newHead.X < 0 || newHead.X >= COLS || newHead.Y < 0 || newHead.Y >= ROWS)
+            {
+                TriggerGameOver();
                 return;
             }
 
-            // Gửi hướng mới cho lớp Game/Snake.
-            game.ChangeDirection(nextDir);
+            // Tự cắn thân
+            if (snake.Contains(newHead))
+            {
+                TriggerGameOver();
+                return;
+            }
 
-            // Game tự xử lý di chuyển, điểm số và va chạm.
-            game.Update();
+            snake.Insert(0, newHead);
 
-            lblScore.Text = $"🍎 Điểm: {game.Score}";
-
-            canvas.Invalidate();
-
-            if (game.IsGameOver)
+            // Ăn mồi
+            if (newHead == food)
+            {
+                score += 10;
+                lblScore.Text = $"🍎 ĐIỂM: {score}";
+                SoundManager.PlayEat();
+                SpawnFood();
+            }
+            else
             {
                 TriggerGameOver();
             }
@@ -309,14 +307,12 @@ namespace SnackGame3.Test
 
             SoundManager.PlayDie();
 
+            // Hiển thị khung Game Over đẹp mắt với nút Chơi Lại và Về Menu
             txtTenNguoiChoi.Text = "Người chơi";
             btnLuuDiem.Enabled = true;
-            btnLuuDiem.Text = "Lưu Điểm";
-
-            lblThongBaoLuu.Text =
-                $"Điểm: {game.Score} - Nhập tên để lưu:";
-
-            lblThongBaoLuu.ForeColor = Color.White;
+            btnLuuDiem.Text = "💾 Lưu Điểm";
+            lblThongBaoLuu.Text = $"Điểm của bạn: {score} - Nhập tên để lưu kỉ lục:";
+            lblThongBaoLuu.ForeColor = Color.LightGray;
 
             pnlGameOverBox.Visible = true;
             pnlGameOverBox.BringToFront();
@@ -377,13 +373,7 @@ namespace SnackGame3.Test
         // Xử lý bàn phím.
         private void GameTestForm_KeyDown(object sender, KeyEventArgs e)
         {
-            if (game == null)
-            {
-                return;
-            }
-
-            // Khi khung Game Over đang mở.
-            if (gameOverShown && pnlGameOverBox.Visible)
+            if (isGameOver && pnlGameOverBox.Visible)
             {
                 if (e.KeyCode == Keys.Enter && btnLuuDiem.Enabled)
                 {
@@ -432,19 +422,8 @@ namespace SnackGame3.Test
                 if (!game.IsGameOver)
                 {
                     isPaused = !isPaused;
-
-                    lblGuide.Text = isPaused
-                        ? "ĐANG TẠM DỪNG - Nhấn P để tiếp tục"
-                        : "[P]: Tạm dừng | [Space]: Chơi lại";
-
+                    SoundManager.PlayButtonClick();
                     canvas.Invalidate();
-                }
-            }
-            else if (e.KeyCode == Keys.Space)
-            {
-                if (gameOverShown)
-                {
-                    RestartGame();
                 }
             }
             else if (e.KeyCode == Keys.Escape)
@@ -459,7 +438,7 @@ namespace SnackGame3.Test
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // Vẽ lưới.
+            // Lưới bàn cờ
             using (Pen gridPen = new Pen(Color.FromArgb(25, 25, 45)))
             {
                 for (int x = 0; x <= COLS; x++)
@@ -483,7 +462,8 @@ namespace SnackGame3.Test
                 }
             }
 
-            if (game == null || game.Snake == null || game.Food == null)
+            // Mồi quả táo đỏ
+            using (Brush foodBrush = new SolidBrush(Color.FromArgb(255, 75, 75)))
             {
                 return;
             }
@@ -502,32 +482,26 @@ namespace SnackGame3.Test
                     CELL_SIZE - 4);
             }
 
-            // Vẽ rắn.
-            for (int i = 0; i < game.Snake.Body.Count; i++)
-            {
-                Point part = game.Snake.Body[i];
-
-                Rectangle rect = new Rectangle(
-                    part.X * CELL_SIZE + 1,
-                    part.Y * CELL_SIZE + 1,
-                    CELL_SIZE - 2,
-                    CELL_SIZE - 2);
-
-                Color color = i == 0
-                    ? Color.FromArgb(70, 235, 70)
-                    : Color.FromArgb(34, 160, 34);
-
-                using (Brush brush = new SolidBrush(color))
+                if (i == 0)
                 {
-                    g.FillRectangle(brush, rect);
+                    using (Brush headBrush = new SolidBrush(Color.FromArgb(70, 235, 70)))
+                    {
+                        g.FillRectangle(headBrush, rect);
+                    }
+                }
+                else
+                {
+                    using (Brush bodyBrush = new SolidBrush(Color.FromArgb(34, 160, 34)))
+                    {
+                        g.FillRectangle(bodyBrush, rect);
+                    }
                 }
             }
 
-            // Hiển thị lớp phủ khi tạm dừng.
+            // Màn hình TẠM DỪNG (PAUSED) thiết kế bóng bẩy
             if (isPaused)
             {
-                using (Brush overlay =
-                    new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+                using (Brush darkOverlay = new SolidBrush(Color.FromArgb(170, 0, 0, 0)))
                 {
                     g.FillRectangle(
                         overlay,
@@ -537,20 +511,20 @@ namespace SnackGame3.Test
                         canvas.Height);
                 }
 
-                using (Font font =
-                    new Font("Segoe UI", 22, FontStyle.Bold))
-                using (Brush brush = new SolidBrush(Color.Yellow))
+                using (Font fontPause = new Font("Segoe UI", 24, FontStyle.Bold))
+                using (Brush brushYellow = new SolidBrush(Color.FromArgb(255, 215, 0)))
                 {
-                    string text = "TẠM DỪNG";
+                    string text = "⏸️ ĐANG TẠM DỪNG";
+                    SizeF size = g.MeasureString(text, fontPause);
+                    g.DrawString(text, fontPause, brushYellow, (canvas.Width - size.Width) / 2, canvas.Height / 2 - 40);
+                }
 
-                    SizeF size = g.MeasureString(text, font);
-
-                    g.DrawString(
-                        text,
-                        font,
-                        brush,
-                        (canvas.Width - size.Width) / 2,
-                        (canvas.Height - size.Height) / 2);
+                using (Font fontSub = new Font("Segoe UI", 12, FontStyle.Regular))
+                using (Brush brushWhite = new SolidBrush(Color.White))
+                {
+                    string text = "Nhấn phím [P] để tiếp tục chơi";
+                    SizeF size = g.MeasureString(text, fontSub);
+                    g.DrawString(text, fontSub, brushWhite, (canvas.Width - size.Width) / 2, canvas.Height / 2 + 10);
                 }
             }
         }
@@ -566,7 +540,6 @@ namespace SnackGame3.Test
             base.OnFormClosed(e);
         }
 
-        // Panel hỗ trợ vẽ mượt, hạn chế nhấp nháy.
         private class GameCanvas : Panel
         {
             public GameCanvas()
