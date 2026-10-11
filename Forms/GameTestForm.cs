@@ -1,32 +1,33 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
-using SnackGame3.Models;
 using SnackGame3.Utils;
 
 namespace SnackGame3.Test
 {
     public class GameTestForm : Form
     {
+        private enum Direction { Up, Down, Left, Right }
+
         // Cấu hình bàn cờ
         private const int CELL_SIZE = 20;
         private const int COLS = 25;
         private const int ROWS = 20;
 
-        // Đối tượng quản lý luật chơi
-        private Game game;
-
-        // Trạng thái giao diện
-        private bool isPaused = false;
-        private bool gameOverShown = false;
-
-        // Hướng dự kiến cho lần di chuyển tiếp theo
+        // Trạng thái game
+        private List<Point> snake = new List<Point>();
+        private Point food;
+        private Direction currentDir = Direction.Right;
         private Direction nextDir = Direction.Right;
+        private bool isGameOver = false;
+        private bool isPaused = false;
+        private int score = 0;
+        private Random random = new Random();
 
         // Điều khiển giao diện
-        private Timer gameTimer;
+        private System.Windows.Forms.Timer gameTimer;
         private GameCanvas canvas;
         private Label lblScore;
         private Label lblGuide;
@@ -50,16 +51,7 @@ namespace SnackGame3.Test
             this.KeyPreview = true;
 
             InitUI();
-
-            // Game nhận kích thước bàn cờ theo pixel.
-            game = new Game(
-                COLS * CELL_SIZE,
-                ROWS * CELL_SIZE,
-                CELL_SIZE);
-
             InitGame();
-
-            KeyDown += GameTestForm_KeyDown;
         }
 
         private void InitUI()
@@ -94,16 +86,15 @@ namespace SnackGame3.Test
             topPanel.Controls.Add(lblGuide);
             this.Controls.Add(topPanel);
 
-            // Bàn cờ
+            // Bàn cờ vẽ game
             canvas = new GameCanvas
             {
                 Location = new Point(20, 55),
                 Size = new Size(COLS * CELL_SIZE, ROWS * CELL_SIZE),
                 BackColor = Color.FromArgb(15, 15, 30)
             };
-
             canvas.Paint += Canvas_Paint;
-            Controls.Add(canvas);
+            this.Controls.Add(canvas);
 
             // ==================== BẢNG POPUP GAME OVER ====================
             pnlGameOverBox = new Panel
@@ -156,7 +147,6 @@ namespace SnackGame3.Test
                 Location = new Point(125, 125),
                 Cursor = Cursors.Hand
             };
-
             btnLuuDiem.FlatAppearance.BorderSize = 0;
             btnLuuDiem.Click += (s, e) =>
             {
@@ -171,7 +161,7 @@ namespace SnackGame3.Test
             // Nút Chơi Lại sau khi chết
             btnChoiLai = new Button
             {
-                Text = "Chơi Lại",
+                Text = "🔄 Chơi Lại",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(40, 110, 200),
@@ -184,6 +174,7 @@ namespace SnackGame3.Test
             btnChoiLai.Click += (s, e) =>
             {
                 SoundManager.PlayButtonClick();
+                pnlGameOverBox.Visible = false;
                 RestartGame();
             };
 
@@ -213,7 +204,7 @@ namespace SnackGame3.Test
             pnlGameOverBox.Controls.Add(btnChoiLai);
             pnlGameOverBox.Controls.Add(btnVeMenu);
 
-            Controls.Add(pnlGameOverBox);
+            this.Controls.Add(pnlGameOverBox);
             pnlGameOverBox.BringToFront();
 
             // Timer game loop
@@ -221,17 +212,20 @@ namespace SnackGame3.Test
             gameTimer.Interval = 120;
             gameTimer.Tick += GameTimer_Tick;
 
-            gameTimer.Tick += GameTimer_Tick;
+            this.KeyDown += GameTestForm_KeyDown;
         }
 
-        // Khởi tạo lại trạng thái giao diện.
         private void InitGame()
         {
-            isPaused = false;
-            gameOverShown = false;
-            nextDir = Direction.Right;
+            if (pnlGameOverBox != null)
+            {
+                pnlGameOverBox.Visible = false;
+            }
 
-            pnlGameOverBox.Visible = false;
+            snake.Clear();
+            snake.Add(new Point(5, 10)); // Đầu
+            snake.Add(new Point(4, 10)); // Thân
+            snake.Add(new Point(3, 10)); // Đuôi
 
             currentDir = Direction.Right;
             nextDir = Direction.Right;
@@ -240,23 +234,67 @@ namespace SnackGame3.Test
             isPaused = false;
             lblScore.Text = "🍎 ĐIỂM: 0";
 
-            canvas.Invalidate();
+            SpawnFood();
             gameTimer.Start();
+            canvas.Invalidate();
         }
 
         private void RestartGame()
         {
-            // Dùng lại đối tượng Game, không tự tạo luật chơi riêng.
-            game.Start();
-
             InitGame();
-            ActiveControl = null;
+            this.ActiveControl = null;
         }
 
-        // Cập nhật game theo Timer.
+        private void LuuDiemVaoBangXepHang(string tenNguoiChoi, int diemSo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(tenNguoiChoi))
+                {
+                    tenNguoiChoi = "Người chơi";
+                }
+
+                tenNguoiChoi = tenNguoiChoi.Replace("|", "-").Trim();
+                string filePath = "scores.txt";
+                string dongMoi = $"{tenNguoiChoi}|{diemSo}{Environment.NewLine}";
+
+                File.AppendAllText(filePath, dongMoi);
+            }
+            catch
+            {
+            }
+        }
+
+        private void SpawnFood()
+        {
+            List<Point> emptyCells = new List<Point>();
+            for (int x = 0; x < COLS; x++)
+            {
+                for (int y = 0; y < ROWS; y++)
+                {
+                    Point p = new Point(x, y);
+                    if (!snake.Contains(p))
+                    {
+                        emptyCells.Add(p);
+                    }
+                }
+            }
+
+            if (emptyCells.Count > 0)
+            {
+                food = emptyCells[random.Next(emptyCells.Count)];
+            }
+        }
+
         private void GameTimer_Tick(object sender, EventArgs e)
         {
-            if (isPaused || game == null || game.IsGameOver)
+            if (isGameOver || isPaused) return;
+
+            currentDir = nextDir;
+            Point head = snake[0];
+            Point newHead = head;
+
+            switch (currentDir)
             {
                 case Direction.Up: newHead = new Point(head.X, head.Y - 1); break;
                 case Direction.Down: newHead = new Point(head.X, head.Y + 1); break;
@@ -290,19 +328,15 @@ namespace SnackGame3.Test
             }
             else
             {
-                TriggerGameOver();
+                snake.RemoveAt(snake.Count - 1);
             }
+
+            canvas.Invalidate();
         }
 
-        // Xử lý khi game kết thúc.
         private void TriggerGameOver()
         {
-            if (gameOverShown)
-            {
-                return;
-            }
-
-            gameOverShown = true;
+            isGameOver = true;
             gameTimer.Stop();
 
             SoundManager.PlayDie();
@@ -316,61 +350,12 @@ namespace SnackGame3.Test
 
             pnlGameOverBox.Visible = true;
             pnlGameOverBox.BringToFront();
-
             txtTenNguoiChoi.Focus();
             txtTenNguoiChoi.SelectAll();
 
             canvas.Invalidate();
         }
 
-        // Lưu điểm và chỉ thông báo thành công khi ghi file thành công.
-        private void BtnLuuDiem_Click(object sender, EventArgs e)
-        {
-            SoundManager.PlayButtonClick();
-
-            string ten = txtTenNguoiChoi.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(ten))
-            {
-                ten = "Người chơi";
-            }
-
-            // Tránh ký tự phân cách làm sai định dạng file.
-            ten = ten.Replace("|", "-")
-                     .Replace("\r", "")
-                     .Replace("\n", "");
-
-            try
-            {
-                string filePath = Path.Combine(
-                    Application.StartupPath,
-                    "scores.txt");
-
-                string dongMoi =
-                    $"{ten}|{game.Score}{Environment.NewLine}";
-
-                File.AppendAllText(filePath, dongMoi);
-
-                btnLuuDiem.Enabled = false;
-                btnLuuDiem.Text = "Đã Lưu";
-
-                lblThongBaoLuu.Text =
-                    $"Đã lưu thành công: {game.Score} điểm!";
-
-                lblThongBaoLuu.ForeColor =
-                    Color.FromArgb(50, 205, 50);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "Không thể lưu điểm.\nChi tiết: " + ex.Message,
-                    "Lỗi lưu điểm",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
-        // Xử lý bàn phím.
         private void GameTestForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (isGameOver && pnlGameOverBox.Visible)
@@ -379,47 +364,28 @@ namespace SnackGame3.Test
                 {
                     btnLuuDiem.PerformClick();
                 }
-
                 return;
             }
 
-            Direction currentDir = game.Snake.CurrentDirection;
-
             if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
             {
-                if (nextDir != Direction.Down &&
-                    currentDir != Direction.Down)
-                {
-                    nextDir = Direction.Up;
-                }
+                if (currentDir != Direction.Down) nextDir = Direction.Up;
             }
             else if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
             {
-                if (nextDir != Direction.Up &&
-                    currentDir != Direction.Up)
-                {
-                    nextDir = Direction.Down;
-                }
+                if (currentDir != Direction.Up) nextDir = Direction.Down;
             }
             else if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A)
             {
-                if (nextDir != Direction.Right &&
-                    currentDir != Direction.Right)
-                {
-                    nextDir = Direction.Left;
-                }
+                if (currentDir != Direction.Right) nextDir = Direction.Left;
             }
             else if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D)
             {
-                if (nextDir != Direction.Left &&
-                    currentDir != Direction.Left)
-                {
-                    nextDir = Direction.Right;
-                }
+                if (currentDir != Direction.Left) nextDir = Direction.Right;
             }
             else if (e.KeyCode == Keys.P)
             {
-                if (!game.IsGameOver)
+                if (!isGameOver)
                 {
                     isPaused = !isPaused;
                     SoundManager.PlayButtonClick();
@@ -428,59 +394,35 @@ namespace SnackGame3.Test
             }
             else if (e.KeyCode == Keys.Escape)
             {
-                Close();
+                this.Close();
             }
         }
 
-        // Vẽ bàn cờ và các đối tượng do Game quản lý.
         private void Canvas_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // Lưới bàn cờ
             using (Pen gridPen = new Pen(Color.FromArgb(25, 25, 45)))
             {
                 for (int x = 0; x <= COLS; x++)
-                {
-                    g.DrawLine(
-                        gridPen,
-                        x * CELL_SIZE,
-                        0,
-                        x * CELL_SIZE,
-                        ROWS * CELL_SIZE);
-                }
-
+                    g.DrawLine(gridPen, x * CELL_SIZE, 0, x * CELL_SIZE, ROWS * CELL_SIZE);
                 for (int y = 0; y <= ROWS; y++)
-                {
-                    g.DrawLine(
-                        gridPen,
-                        0,
-                        y * CELL_SIZE,
-                        COLS * CELL_SIZE,
-                        y * CELL_SIZE);
-                }
+                    g.DrawLine(gridPen, 0, y * CELL_SIZE, COLS * CELL_SIZE, y * CELL_SIZE);
             }
 
             // Mồi quả táo đỏ
             using (Brush foodBrush = new SolidBrush(Color.FromArgb(255, 75, 75)))
             {
-                return;
+                g.FillEllipse(foodBrush, food.X * CELL_SIZE + 2, food.Y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
             }
 
-            // Vẽ thức ăn.
-            Point foodPosition = game.Food.Position;
-
-            using (Brush foodBrush =
-                new SolidBrush(Color.FromArgb(255, 75, 75)))
+            // Vẽ rắn
+            for (int i = 0; i < snake.Count; i++)
             {
-                g.FillEllipse(
-                    foodBrush,
-                    foodPosition.X * CELL_SIZE + 2,
-                    foodPosition.Y * CELL_SIZE + 2,
-                    CELL_SIZE - 4,
-                    CELL_SIZE - 4);
-            }
+                Point part = snake[i];
+                Rectangle rect = new Rectangle(part.X * CELL_SIZE + 1, part.Y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
 
                 if (i == 0)
                 {
@@ -503,12 +445,7 @@ namespace SnackGame3.Test
             {
                 using (Brush darkOverlay = new SolidBrush(Color.FromArgb(170, 0, 0, 0)))
                 {
-                    g.FillRectangle(
-                        overlay,
-                        0,
-                        0,
-                        canvas.Width,
-                        canvas.Height);
+                    g.FillRectangle(darkOverlay, 0, 0, canvas.Width, canvas.Height);
                 }
 
                 using (Font fontPause = new Font("Segoe UI", 24, FontStyle.Bold))
@@ -531,12 +468,8 @@ namespace SnackGame3.Test
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            if (gameTimer != null)
-            {
-                gameTimer.Stop();
-                gameTimer.Dispose();
-            }
-
+            gameTimer?.Stop();
+            gameTimer?.Dispose();
             base.OnFormClosed(e);
         }
 
@@ -544,13 +477,8 @@ namespace SnackGame3.Test
         {
             public GameCanvas()
             {
-                DoubleBuffered = true;
-
-                SetStyle(
-                    ControlStyles.OptimizedDoubleBuffer |
-                    ControlStyles.AllPaintingInWmPaint |
-                    ControlStyles.UserPaint,
-                    true);
+                this.DoubleBuffered = true;
+                this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             }
         }
     }

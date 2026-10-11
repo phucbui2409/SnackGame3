@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Drawing;
 
@@ -7,7 +11,6 @@ namespace SnackGame3.Models
     internal class Game
     {
         public Snake Snake { get; private set; }
-
         public Food Food { get; private set; }
 
         public int Score { get; private set; }
@@ -16,35 +19,23 @@ namespace SnackGame3.Models
 
         public int BoardWidth { get; private set; }
         public int BoardHeight { get; private set; }
-
         public int CellSize { get; private set; }
-
-        public int Columns { get; private set; }
-        public int Rows { get; private set; }
 
         private Random random;
 
         public Game(int boardWidth, int boardHeight, int cellSize)
         {
             if (boardWidth <= 0 || boardHeight <= 0 || cellSize <= 0)
-            {
                 throw new ArgumentException(
-                    "Kích thước bàn chơi và ô phải lớn hơn 0.");
-            }
+                    "Kích thước bản đồ và ô phải lớn hơn 0.");
 
             if (boardWidth < cellSize || boardHeight < cellSize)
-            {
                 throw new ArgumentException(
-                    "Bàn chơi phải đủ lớn để chứa ít nhất một ô.");
-            }
+                    "Bản đồ phải có kích thước tối thiểu bằng một ô.");
 
+            BoardWidth = boardWidth / cellSize * cellSize;
+            BoardHeight = boardHeight / cellSize * cellSize;
             CellSize = cellSize;
-
-            Columns = boardWidth / cellSize;
-            Rows = boardHeight / cellSize;
-
-            BoardWidth = Columns * CellSize;
-            BoardHeight = Rows * CellSize;
 
             random = new Random();
 
@@ -58,28 +49,17 @@ namespace SnackGame3.Models
                 Score = 0;
                 IsGameOver = false;
 
-                int centerX = Columns / 2;
-                int centerY = Rows / 2;
+                int centerX = (BoardWidth / CellSize / 2) * CellSize;
+                int centerY = (BoardHeight / CellSize / 2) * CellSize;
 
-                int initialLength = Math.Min(3, Columns);
+                int initialLength = Math.Min(
+                    3, BoardWidth / CellSize);
 
-                if (Columns < initialLength || Rows < 1)
-                {
-                    IsGameOver = true;
-                    return;
-                }
-
-                Snake = new Snake(
-                    centerX,
-                    centerY,
-                    initialLength);
-
+                Snake = new Snake(centerX, centerY, initialLength);
                 Food = new Food(0, 0);
 
                 if (!SpawnFood())
-                {
                     IsGameOver = true;
-                }
             }
             catch (Exception ex)
             {
@@ -89,14 +69,13 @@ namespace SnackGame3.Models
                 IsGameOver = true;
             }
         }
+
         public void ChangeDirection(Direction direction)
         {
             try
             {
                 if (IsGameOver || Snake == null)
-                {
                     return;
-                }
 
                 Snake.ChangeDirection(direction);
             }
@@ -104,6 +83,8 @@ namespace SnackGame3.Models
             {
                 Debug.WriteLine(
                     $"[Lỗi đổi hướng]: {ex.Message}");
+
+                IsGameOver = true;
             }
         }
 
@@ -112,9 +93,7 @@ namespace SnackGame3.Models
             try
             {
                 if (IsGameOver || Snake == null || Food == null)
-                {
                     return;
-                }
 
                 Snake.Move();
 
@@ -133,19 +112,16 @@ namespace SnackGame3.Models
                 if (Snake.Head == Food.Position)
                 {
                     Score += 10;
-
                     Snake.Grow();
 
                     if (!SpawnFood())
-                    {
                         IsGameOver = true;
-                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[Lỗi cập nhật game]: {ex.Message}");
+                    $"[Lỗi xử lý luật game]: {ex.Message}");
 
                 IsGameOver = true;
             }
@@ -153,65 +129,44 @@ namespace SnackGame3.Models
 
         public bool CheckWallCollision()
         {
-            if (Snake == null)
-            {
-                return true;
-            }
-
             Point head = Snake.Head;
 
             return head.X < 0
                 || head.Y < 0
-                || head.X >= Columns
-                || head.Y >= Rows;
+                || head.X >= BoardWidth
+                || head.Y >= BoardHeight;
         }
 
         private bool SpawnFood()
         {
             try
             {
-                if (Snake == null || Food == null)
-                {
-                    return false;
-                }
-
-                int totalCells = Columns * Rows;
+                int columns = BoardWidth / CellSize;
+                int rows = BoardHeight / CellSize;
+                int totalCells = columns * rows;
 
                 if (Snake.Body.Count >= totalCells)
-                {
                     return false;
-                }
 
                 for (int i = 0; i < totalCells; i++)
                 {
-                    int x = random.Next(0, Columns);
-                    int y = random.Next(0, Rows);
+                    Food.GenerateRandomPosition(
+                        BoardWidth,
+                        BoardHeight,
+                        CellSize,
+                        random);
 
-                    Point position = new Point(x, y);
-
-                    bool occupied = false;
-
-                    foreach (Point segment in Snake.Body)
-                    {
-                        if (segment == position)
-                        {
-                            occupied = true;
-                            break;
-                        }
-                    }
-
-                    if (!occupied)
-                    {
-                        Food = new Food(x, y);
+                    if (!Food.IsOnSnake(Snake))
                         return true;
-                    }
                 }
 
-                for (int y = 0; y < Rows; y++)
+                for (int y = 0; y < rows; y++)
                 {
-                    for (int x = 0; x < Columns; x++)
+                    for (int x = 0; x < columns; x++)
                     {
-                        Point position = new Point(x, y);
+                        Point position = new Point(
+                            x * CellSize,
+                            y * CellSize);
 
                         bool occupied = false;
 
@@ -226,7 +181,7 @@ namespace SnackGame3.Models
 
                         if (!occupied)
                         {
-                            Food = new Food(x, y);
+                            Food = new Food(position.X, position.Y);
                             return true;
                         }
                     }
@@ -237,7 +192,7 @@ namespace SnackGame3.Models
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[Lỗi tạo thức ăn]: {ex.Message}");
+                    $"[Lỗi sinh thức ăn]: {ex.Message}");
 
                 return false;
             }
