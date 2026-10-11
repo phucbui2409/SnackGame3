@@ -17,6 +17,13 @@ namespace SnackGame3.Forms
             this.BackColor = GameConfig.BgColor; // dung mau tu config
             this.Load += MainForm_Load;
             this.FormClosing += MainForm_FormClosing;
+
+            
+            this.btnChoi.Click += new System.EventHandler(this.btnChoi_Click);
+            this.btnThanhTich.Click += new System.EventHandler(this.btnThanhTich_Click);
+            this.btnHuongDan.Click += new System.EventHandler(this.btnHuongDan_Click);
+            this.btnSound.Click += new System.EventHandler(this.btnSound_Click);
+            this.btnThoat.Click += new System.EventHandler(this.btnThoat_Click);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
