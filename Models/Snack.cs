@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SnackGame3.Models
 {
@@ -19,103 +18,143 @@ namespace SnackGame3.Models
 
         public class Snake
         {
-            // 1. Tạo cấu trúc dữ liệu lưu các đoạn thân rắn
             public List<Point> Body { get; private set; }
             public Direction CurrentDirection { get; private set; }
-
-            // Biến cờ để theo dõi việc rắn có ăn thức ăn hay không
             private bool growNextMove;
 
-            // 2. Khởi tạo rắn
+            // 1. Bẫy lỗi ở khởi tạo (Tránh trường hợp truyền chiều dài âm hoặc bằng 0)
             public Snake(int startX, int startY, int initialLength = 3)
             {
-                Body = new List<Point>();
-                CurrentDirection = Direction.Right; // Mặc định di chuyển sang phải
-                growNextMove = false;
-
-                // Tạo các đốt thân rắn ban đầu (đầu rắn ở [0])
-                for (int i = 0; i < initialLength; i++)
+                try
                 {
-                    Body.Add(new Point(startX - i, startY));
+                    if (initialLength <= 0)
+                    {
+                        throw new ArgumentException("Chiều dài khởi tạo phải lớn hơn 0.");
+                    }
+
+                    Body = new List<Point>();
+                    CurrentDirection = Direction.Right;
+                    growNextMove = false;
+
+                    for (int i = 0; i < initialLength; i++)
+                    {
+                        Body.Add(new Point(startX - i, startY));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi khởi tạo rắn]: {ex.Message}");
+                    // Fallback: Tạo ít nhất 1 đốt để game không bị crash toàn tập
+                    Body = new List<Point> { new Point(startX, startY) };
+                    CurrentDirection = Direction.Right;
                 }
             }
 
-            // Lấy tọa độ đầu rắn
-            public Point Head => Body.First();
+            // 2. Bẫy lỗi khi lấy đầu rắn (Tránh lỗi InvalidOperationException khi List rỗng)
+            public Point Head
+            {
+                get
+                {
+                    try
+                    {
+                        if (Body == null || Body.Count == 0)
+                        {
+                            throw new Exception("Danh sách thân rắn bị rỗng (null hoặc count = 0).");
+                        }
+                        return Body.First();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[Lỗi lấy đầu rắn]: {ex.Message}");
+                        return new Point(0, 0); // Trả về giá trị mặc định để tránh crash
+                    }
+                }
+            }
 
-            // 3. Đổi hướng bằng các phím mũi tên
             public void ChangeDirection(Direction newDirection)
             {
-                // Rắn không thể quay đầu 180 độ (VD: đang đi lên không thể đi xuống ngay)
-                if ((CurrentDirection == Direction.Up && newDirection == Direction.Down) ||
-                    (CurrentDirection == Direction.Down && newDirection == Direction.Up) ||
-                    (CurrentDirection == Direction.Left && newDirection == Direction.Right) ||
-                    (CurrentDirection == Direction.Right && newDirection == Direction.Left))
+                try
                 {
-                    return;
+                    if ((CurrentDirection == Direction.Up && newDirection == Direction.Down) ||
+                        (CurrentDirection == Direction.Down && newDirection == Direction.Up) ||
+                        (CurrentDirection == Direction.Left && newDirection == Direction.Right) ||
+                        (CurrentDirection == Direction.Right && newDirection == Direction.Left))
+                    {
+                        return;
+                    }
+                    CurrentDirection = newDirection;
                 }
-                CurrentDirection = newDirection;
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi đổi hướng]: {ex.Message}");
+                }
             }
 
-            // 4. Di chuyển rắn
+            // 3. Bẫy lỗi khi di chuyển (Tránh lỗi OutOfRange khi xóa đuôi List)
             public void Move()
             {
-                Point currentHead = Head;
-                Point newHead = currentHead; // Tạo một bản sao của đầu hiện tại
-
-                // Tính toán vị trí đầu mới dựa trên hướng hiện tại
-                switch (CurrentDirection)
+                try
                 {
-                    case Direction.Up:
-                        newHead.Y -= 1;
-                        break;
-                    case Direction.Down:
-                        newHead.Y += 1;
-                        break;
-                    case Direction.Left:
-                        newHead.X -= 1;
-                        break;
-                    case Direction.Right:
-                        newHead.X += 1;
-                        break;
+                    Point currentHead = Head;
+                    Point newHead = currentHead;
+
+                    switch (CurrentDirection)
+                    {
+                        case Direction.Up: newHead.Y -= 1; break;
+                        case Direction.Down: newHead.Y += 1; break;
+                        case Direction.Left: newHead.X -= 1; break;
+                        case Direction.Right: newHead.X += 1; break;
+                    }
+
+                    Body.Insert(0, newHead);
+
+                    if (growNextMove)
+                    {
+                        growNextMove = false;
+                    }
+                    else
+                    {
+                        // Kiểm tra an toàn trước khi xóa đuôi
+                        if (Body.Count > 0)
+                        {
+                            Body.RemoveAt(Body.Count - 1);
+                        }
+                    }
                 }
-
-                // Thêm đầu mới vào vị trí đầu tiên của danh sách
-                Body.Insert(0, newHead);
-
-                // 5. Xử lý việc rắn dài thêm khi ăn thức ăn
-                if (growNextMove)
+                catch (Exception ex)
                 {
-                    growNextMove = false; // Đã dài thêm, reset lại trạng thái
-                                          // Không xóa đuôi để thân rắn tự động dài ra 1 đốt
-                }
-                else
-                {
-                    // Nếu không ăn thức ăn, xóa phần đuôi cuối cùng để rắn di chuyển tịnh tiến
-                    Body.RemoveAt(Body.Count - 1);
+                    Debug.WriteLine($"[Lỗi di chuyển]: {ex.Message}");
                 }
             }
 
-            // Gọi hàm này từ bên ngoài (Form) khi phát hiện đầu rắn trùng với tọa độ thức ăn
             public void Grow()
             {
                 growNextMove = true;
             }
 
-            // 6. Kiểm tra rắn có tự cắn vào thân hay không
+            // 4. Bẫy lỗi khi kiểm tra va chạm
             public bool CheckSelfCollision()
             {
-                Point head = Head;
-
-                // Lặp từ đốt thứ 1 (bỏ qua đầu rắn ở index 0) để xem có trùng tọa độ không
-                for (int i = 1; i < Body.Count; i++)
+                try
                 {
-                    if (head == Body[i])
+                    if (Body == null || Body.Count <= 1) return false;
+
+                    Point head = Head;
+
+                    for (int i = 1; i < Body.Count; i++)
                     {
-                        return true;
+                        if (head == Body[i])
+                        {
+                            return true;
+                        }
                     }
+                    return false;
                 }
-                return false;
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi kiểm tra va chạm]: {ex.Message}");
+                    return false; // Trả về false để game không bị dừng đột ngột do code lỗi
+                }
             }
         }
     }
