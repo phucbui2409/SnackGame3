@@ -21,6 +21,16 @@ namespace SnackGame3.Models
             private bool growNextMove;
 
             // Đặt try-catch ở đây để bắt lỗi đầu vào
+            Up,
+            Down,
+            Left,
+            Right
+        }
+
+        public List<Point> Body { get; private set; }
+        public Direction CurrentDirection { get; private set; }
+            private bool growNextMove;
+
             public Snake(int startX, int startY, int initialLength = 3)
             {
                 try
@@ -49,6 +59,7 @@ namespace SnackGame3.Models
             }
 
             // Dùng 'if' thay vì try-catch để kiểm tra an toàn
+
             public Point Head
             {
                 get
@@ -58,6 +69,19 @@ namespace SnackGame3.Models
                         return new Point(0, 0); // Trả về tọa độ an toàn nếu lỗi logic xảy ra
                     }
                     return Body.First();
+                    try
+                    {
+                        if (Body == null || Body.Count == 0)
+                        {
+                            throw new Exception("Danh sách thân rắn bị rỗng (null hoặc count = 0).");
+                        }
+                        return Body.First();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[Lỗi lấy đầu rắn]: {ex.Message}");
+                        return new Point(0, 0); 
+                    }
                 }
             }
 
@@ -71,6 +95,21 @@ namespace SnackGame3.Models
                     return;
                 }
                 CurrentDirection = newDirection;
+                try
+                {
+                    if ((CurrentDirection == Direction.Up && newDirection == Direction.Down) ||
+                        (CurrentDirection == Direction.Down && newDirection == Direction.Up) ||
+                        (CurrentDirection == Direction.Left && newDirection == Direction.Right) ||
+                        (CurrentDirection == Direction.Right && newDirection == Direction.Left))
+                    {
+                        return;
+                    }
+                    CurrentDirection = newDirection;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi đổi hướng]: {ex.Message}");
+                }
             }
 
             public void Move()
@@ -101,6 +140,36 @@ namespace SnackGame3.Models
                     {
                         Body.RemoveAt(Body.Count - 1);
                     }
+                try
+                {
+                    Point currentHead = Head;
+                    Point newHead = currentHead;
+
+                    switch (CurrentDirection)
+                    {
+                        case Direction.Up: newHead.Y -= 1; break;
+                        case Direction.Down: newHead.Y += 1; break;
+                        case Direction.Left: newHead.X -= 1; break;
+                        case Direction.Right: newHead.X += 1; break;
+                    }
+
+                    Body.Insert(0, newHead);
+
+                    if (growNextMove)
+                    {
+                        growNextMove = false;
+                    }
+                    else
+                    {
+                        if (Body.Count > 0)
+                        {
+                            Body.RemoveAt(Body.Count - 1);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi di chuyển]: {ex.Message}");
                 }
             }
 
@@ -119,6 +188,26 @@ namespace SnackGame3.Models
                     if (head == Body[i]) return true;
                 }
                 return false;
+                try
+                {
+                    if (Body == null || Body.Count <= 1) return false;
+
+                    Point head = Head;
+
+                    for (int i = 1; i < Body.Count; i++)
+                    {
+                        if (head == Body[i])
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Lỗi kiểm tra va chạm]: {ex.Message}");
+                    return false; 
+                }
             }
         }
     }
