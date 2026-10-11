@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SnackGame3.Models
 {
-    internal class Snack
+    internal class Snake
     {
     }
 }
