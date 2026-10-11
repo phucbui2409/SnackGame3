@@ -6,18 +6,19 @@ using System.Linq;
 
 namespace SnackGame3.Models
 {
+    public enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
     internal class Snake
     {
-        public enum Direction
-        {
-            Up,
-            Down,
-            Left,
-            Right
-        }
+            public List<Point> Body { get; private set; }
 
-        public List<Point> Body { get; private set; }
-        public Direction CurrentDirection { get; private set; }
+            public Direction CurrentDirection { get; private set; }
+
             private bool growNextMove;
 
             public Snake(int startX, int startY, int initialLength = 3)
@@ -41,8 +42,7 @@ namespace SnackGame3.Models
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"[Lỗi khởi tạo rắn]: {ex.Message}");
-                    Body = new List<Point> { new Point(startX, startY) };
-                    CurrentDirection = Direction.Right;
+                    throw;
                 }
             }
 
@@ -60,8 +60,8 @@ namespace SnackGame3.Models
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"[Lỗi lấy đầu rắn]: {ex.Message}");
-                        return new Point(0, 0); 
+                        Debug.WriteLine($"[Lỗi khởi tạo rắn]: {ex.Message}");
+                        throw;
                     }
                 }
             }
@@ -81,7 +81,8 @@ namespace SnackGame3.Models
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[Lỗi đổi hướng]: {ex.Message}");
+                    Debug.WriteLine($"[Lỗi khởi tạo rắn]: {ex.Message}");
+                    throw;
                 }
             }
 
