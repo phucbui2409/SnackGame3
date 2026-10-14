@@ -100,6 +100,7 @@
     </Compile>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
+    <None Include="bin\Debug\SnackGame3.exe.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -114,6 +115,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Debug\scores.txt" />
+    <Content Include="bin\Debug\SnackGame3.exe" />
+    <Content Include="bin\Debug\SnackGame3.pdb" />
+    <Content Include="bin\Debug\Sounds\eatdie.wav" />
+    <Content Include="bin\Debug\Sounds\eatsnake.wav" />
+    <Content Include="bin\Debug\Sounds\gamemusic.mp3" />
+    <Content Include="bin\Debug\Sounds\nutbam.wav" />
     <Content Include="README.md" />
     <Content Include="Sounds\eatdie.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -128,6 +136,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
