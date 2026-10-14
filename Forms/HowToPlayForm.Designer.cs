@@ -79,7 +79,7 @@ namespace SnackGame3.Forms
             lblHuongDanText.Name = "lblHuongDanText";
             lblHuongDanText.Size = new Size(413, 84);
             lblHuongDanText.TabIndex = 1;
-            lblHuongDanText.Text = "• Dùng 4 phím Mũi Tên (Lên, Xuống, Trái, Phải)\r\n• Hoặc dùng phím W, A, S, D để di chuyển rắn.\r\n• Nhấn phím P hoặc ESC để Tạm dừng game.";
+            lblHuongDanText.Text = "• Chọn độ khó (Dễ / Vừa / Khó) và bấm Start để bắt đầu.\r\n• Dùng 4 phím Mũi Tên hoặc W, A, S, D để điều khiển.\r\n• Nhấn phím P để Tạm dừng, phím ESC để thoát.";
             // 
             // lblLuatChoiTitle
             // 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -17,10 +18,97 @@ namespace SnackGame3.Forms
 
         private const string filePath = "scores.txt";
 
+        // Popup xác nhận xóa (khởi tạo bằng code để không che khuất bảng xếp hạng trên Visual Studio Designer)
+        private Panel pnlConfirmOverlay;
+        private Panel pnlConfirmBox;
+        private Label lblConfirmTitle;
+        private Label lblConfirmMessage;
+        private Button btnDongYXoa;
+        private Button btnHuyXoa;
+
         public LeaderboardForm()
         {
             InitializeComponent();
-            this.BackColor = GameConfig.BgColor; 
+            this.BackColor = GameConfig.BgColor;
+            InitConfirmPopup();
+        }
+
+        private void InitConfirmPopup()
+        {
+            pnlConfirmOverlay = new Panel
+            {
+                BackColor = Color.FromArgb(210, 10, 10, 25),
+                Dock = DockStyle.Fill,
+                Location = new Point(0, 0),
+                Size = new Size(this.ClientSize.Width, this.ClientSize.Height),
+                Visible = false
+            };
+
+            pnlConfirmBox = new Panel
+            {
+                BackColor = Color.FromArgb(30, 30, 55),
+                BorderStyle = BorderStyle.FixedSingle,
+                Size = new Size(400, 230),
+                Location = new Point((this.ClientSize.Width - 400) / 2, (this.ClientSize.Height - 230) / 2)
+            };
+
+            lblConfirmTitle = new Label
+            {
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(255, 80, 80),
+                Location = new Point(0, 15),
+                Size = new Size(400, 35),
+                Text = "⚠️ XÁC NHẬN XÓA",
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            lblConfirmMessage = new Label
+            {
+                Font = new Font("Segoe UI", 11F, FontStyle.Regular),
+                ForeColor = Color.White,
+                Location = new Point(20, 60),
+                Size = new Size(360, 65),
+                Text = "Bạn có chắc chắn muốn xóa toàn bộ bảng xếp hạng không?\r\n\r\n(Thao tác này không thể hoàn tác!)",
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            btnDongYXoa = new Button
+            {
+                BackColor = Color.FromArgb(200, 45, 45),
+                Cursor = Cursors.Hand,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(35, 150),
+                Size = new Size(155, 45),
+                Text = "🗑️ Đồng Ý Xóa",
+                UseVisualStyleBackColor = false
+            };
+            btnDongYXoa.FlatAppearance.BorderSize = 0;
+            btnDongYXoa.Click += btnDongYXoa_Click;
+
+            btnHuyXoa = new Button
+            {
+                BackColor = Color.FromArgb(70, 70, 100),
+                Cursor = Cursors.Hand,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(210, 150),
+                Size = new Size(155, 45),
+                Text = "❌ Hủy Bỏ",
+                UseVisualStyleBackColor = false
+            };
+            btnHuyXoa.FlatAppearance.BorderSize = 0;
+            btnHuyXoa.Click += btnHuyXoa_Click;
+
+            pnlConfirmBox.Controls.Add(lblConfirmTitle);
+            pnlConfirmBox.Controls.Add(lblConfirmMessage);
+            pnlConfirmBox.Controls.Add(btnDongYXoa);
+            pnlConfirmBox.Controls.Add(btnHuyXoa);
+
+            pnlConfirmOverlay.Controls.Add(pnlConfirmBox);
+            this.Controls.Add(pnlConfirmOverlay);
         }
 
         private void LeaderboardForm_Load(object sender, EventArgs e)
