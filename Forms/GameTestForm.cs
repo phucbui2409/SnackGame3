@@ -94,8 +94,8 @@ namespace SnackGame3.Test
 
             lblGuide = new Label
             {
-                Text = "⏸️ [P]: Dừng  |  🎮 [W,A,S,D] / [Mũi tên]",
-                Font = new Font("Segoe UI", 9, FontStyle.Regular),
+                Text = "⏸️[P]:Tạm dừng|🎮 [W,A,S,D]/[Mũi tên]:Di chuyển",
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 ForeColor = Color.FromArgb(170, 170, 200),
                 Location = new Point(270, 9),
                 AutoSize = true
