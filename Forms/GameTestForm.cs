@@ -32,6 +32,18 @@ namespace SnackGame3.Test
         {
             InitializeComponent();
 
+            // Cố định kích thước pixel chuẩn xác tuyệt đối không bị ảnh hưởng bởi DPI Windows
+            this.ClientSize = new Size(COLS * CELL_SIZE + 40, ROWS * CELL_SIZE + 90);
+            this.canvas.Size = new Size(COLS * CELL_SIZE, ROWS * CELL_SIZE);
+            this.canvas.Location = new Point(20, 55);
+            this.topPanel.Size = new Size(COLS * CELL_SIZE, 35);
+            this.topPanel.Location = new Point(20, 10);
+
+            // Bật DoubleBuffered cho canvas để tránh giật lag, nhấp nháy
+            typeof(PictureBox).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                null, this.canvas, new object[] { true });
+
             // Nếu đang trong Visual Studio Designer thì dừng lại, không kích hoạt logic chạy game
             if (LicenseManager.UsageMode == LicenseUsageMode.Designtime || this.DesignMode)
             {
@@ -66,6 +78,8 @@ namespace SnackGame3.Test
             SpawnFood();
             UpdateDifficultySelectionUI();
 
+            // Căn giữa hộp chọn độ khó
+            pnlStartBox.Location = new Point((this.ClientSize.Width - pnlStartBox.Width) / 2, (this.ClientSize.Height - pnlStartBox.Height) / 2 + 15);
             pnlStartBox.Visible = true;
             pnlStartBox.BringToFront();
 
@@ -227,6 +241,7 @@ namespace SnackGame3.Test
             lblThongBaoLuu.Text = $"Điểm của bạn: {score} ({GameConfig.GetDifficultyDisplayName(GameConfig.CurrentDifficulty)}) - Nhập tên để lưu kỉ lục:";
             lblThongBaoLuu.ForeColor = Color.LightGray;
 
+            pnlGameOverBox.Location = new Point((this.ClientSize.Width - pnlGameOverBox.Width) / 2, (this.ClientSize.Height - pnlGameOverBox.Height) / 2 + 15);
             pnlGameOverBox.Visible = true;
             pnlGameOverBox.BringToFront();
             txtTenNguoiChoi.Focus();
@@ -381,6 +396,12 @@ namespace SnackGame3.Test
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
+            // Xóa nền màu chuẩn cho bàn cờ
+            using (SolidBrush bgBrush = new SolidBrush(Color.FromArgb(15, 15, 30)))
+            {
+                g.FillRectangle(bgBrush, 0, 0, canvas.Width, canvas.Height);
+            }
+
             // Lưới bàn cờ
             using (Pen gridPen = new Pen(Color.FromArgb(25, 25, 45)))
             {
@@ -388,6 +409,12 @@ namespace SnackGame3.Test
                     g.DrawLine(gridPen, x * CELL_SIZE, 0, x * CELL_SIZE, ROWS * CELL_SIZE);
                 for (int y = 0; y <= ROWS; y++)
                     g.DrawLine(gridPen, 0, y * CELL_SIZE, COLS * CELL_SIZE, y * CELL_SIZE);
+            }
+
+            // Đường viền bao quanh bàn cờ
+            using (Pen borderPen = new Pen(Color.FromArgb(50, 50, 80), 1))
+            {
+                g.DrawRectangle(borderPen, 0, 0, COLS * CELL_SIZE - 1, ROWS * CELL_SIZE - 1);
             }
 
             // Dữ liệu mẫu khi ở chế độ Visual Studio Designer để giáo viên thấy trực quan ô ma trận có con rắn
