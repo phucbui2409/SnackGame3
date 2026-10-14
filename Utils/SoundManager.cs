@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Media;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -18,26 +19,66 @@ namespace SnackGame3.Utils
         private static bool isDieLoaded = false;
         private static bool isButtonLoaded = false;
 
-        // Âm lượng (thang điểm 0 - 1000): điều chỉnh hài hòa
-        // Nhạc nền êm dịu, không lấn át (300/1000 ~ 30%)
-        // Hiệu ứng ăn mồi rõ ràng, vừa phải (700/1000 ~ 70%)
-        // Hiệu ứng thua nổi bật (750/1000 ~ 75%)
-        public static int MusicVolume { get; set; } = 300;
+        // SoundPlayer phát trực tiếp từ RAM, không gây giật/delay khi ăn mồi
+        private static SoundPlayer playerEat;
+        private static SoundPlayer playerDie;
+        private static SoundPlayer playerBtn;
+
+        public static int MusicVolume { get; set; } = 400;
         public static int SfxVolume { get; set; } = 700;
+        public static int ButtonVolume { get; set; } = 650;
+
+        static SoundManager()
+        {
+            PreloadSfx();
+        }
+
+        private static void PreloadSfx()
+        {
+            try
+            {
+                string eatPath = GetSoundPath("eatsnake.wav");
+                if (File.Exists(eatPath))
+                {
+                    playerEat = new SoundPlayer(eatPath);
+                    playerEat.LoadAsync();
+                }
+
+                string diePath = GetSoundPath("eatdie.wav");
+                if (File.Exists(diePath))
+                {
+                    playerDie = new SoundPlayer(diePath);
+                    playerDie.LoadAsync();
+                }
+
+                string btnPath = GetSoundPath("nutbam.wav");
+                if (File.Exists(btnPath))
+                {
+                    playerBtn = new SoundPlayer(btnPath);
+                    playerBtn.LoadAsync();
+                }
+            }
+            catch
+            {
+            }
+        }
 
         private static string GetSoundPath(string fileName)
         {
-            // Tìm trong thư mục chạy của ứng dụng (bin/Debug/...)
+            // 1. Tìm trong thư mục chạy của ứng dụng (bin/Debug/Sounds/...)
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", fileName);
             if (File.Exists(path)) return path;
 
-            // Tìm ngược lên thư mục project nếu chưa copy
-            string parentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Sounds", fileName);
+            // 2. Tìm trong thư mục gốc project (D:\phucbui2409\SnackGame3\Sounds\...)
+            string parentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "Sounds", fileName);
             if (File.Exists(parentPath)) return Path.GetFullPath(parentPath);
 
-            // Tìm ở thư mục gốc Downloads dự phòng
-            string downloadPath = Path.Combine(@"C:\Users\vohon\Downloads\sound", fileName);
-            if (File.Exists(downloadPath)) return downloadPath;
+            string projectPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Sounds", fileName);
+            if (File.Exists(projectPath)) return Path.GetFullPath(projectPath);
+
+            // 3. Đường dẫn cố định trong project
+            string hardcodedPath = Path.Combine(@"D:\phucbui2409\SnackGame3\Sounds", fileName);
+            if (File.Exists(hardcodedPath)) return hardcodedPath;
 
             return path;
         }
@@ -50,12 +91,11 @@ namespace SnackGame3.Utils
             }
             catch
             {
-                // Bỏ qua lỗi MCI nếu có
             }
         }
 
         /// <summary>
-        /// Phát nhạc nền game (gamemusic.mp3) lặp vô tận
+        /// Phát nhạc nền game (gamemusic.mp3) lặp vô tận ở sảnh menu
         /// </summary>
         public static void PlayBackgroundMusic()
         {
@@ -66,20 +106,19 @@ namespace SnackGame3.Utils
                 string musicFile = GetSoundPath("gamemusic.mp3");
                 if (!File.Exists(musicFile)) return;
 
-                if (!isMusicLoaded)
-                {
-                    SendMci("close bgm");
-                    SendMci($"open \"{musicFile}\" type mpegvideo alias bgm");
-                    SendMci($"setaudio bgm volume to {MusicVolume}");
-                    isMusicLoaded = true;
-                }
+                // Đóng trước nếu đang mở để tránh xung đột
+                SendMci("stop bgm");
+                SendMci("close bgm");
 
+                SendMci($"open \"{musicFile}\" type mpegvideo alias bgm");
+                SendMci($"setaudio bgm volume to {MusicVolume}");
                 SendMci("play bgm repeat");
+
+                isMusicLoaded = true;
                 isMusicPlaying = true;
             }
             catch
             {
-                // Phòng ngừa lỗi không mong muốn
             }
         }
 
@@ -90,11 +129,10 @@ namespace SnackGame3.Utils
         {
             try
             {
-                if (isMusicLoaded)
-                {
-                    SendMci("stop bgm");
-                    isMusicPlaying = false;
-                }
+                SendMci("stop bgm");
+                SendMci("close bgm");
+                isMusicLoaded = false;
+                isMusicPlaying = false;
             }
             catch
             {
@@ -102,13 +140,13 @@ namespace SnackGame3.Utils
         }
 
         /// <summary>
-        /// Tạm dừng nhạc nền (khi mở form con như Hướng dẫn, Điểm số, Game)
+        /// Tạm dừng nhạc nền
         /// </summary>
         public static void PauseBackgroundMusic()
         {
             try
             {
-                if (isMusicLoaded && isMusicPlaying)
+                if (isMusicPlaying)
                 {
                     SendMci("pause bgm");
                 }
@@ -119,7 +157,7 @@ namespace SnackGame3.Utils
         }
 
         /// <summary>
-        /// Tiếp tục phát nhạc nền (khi đóng form con quay lại menu)
+        /// Tiếp tục phát nhạc nền
         /// </summary>
         public static void ResumeBackgroundMusic()
         {
@@ -127,9 +165,10 @@ namespace SnackGame3.Utils
 
             try
             {
-                if (isMusicLoaded && isMusicPlaying)
+                if (isMusicLoaded)
                 {
                     SendMci("resume bgm");
+                    isMusicPlaying = true;
                 }
                 else
                 {
@@ -142,7 +181,7 @@ namespace SnackGame3.Utils
         }
 
         /// <summary>
-        /// Phát âm thanh khi ăn mồi (eatsnake.wav)
+        /// Phát âm thanh khi ăn mồi (eatsnake.wav) - Bằng SoundPlayer siêu nhanh, không delay
         /// </summary>
         public static void PlayEat()
         {
@@ -150,18 +189,23 @@ namespace SnackGame3.Utils
 
             try
             {
-                string eatFile = GetSoundPath("eatsnake.wav");
-                if (!File.Exists(eatFile)) return;
-
-                if (!isEatLoaded)
+                if (playerEat != null)
                 {
-                    SendMci("close sfx_eat");
-                    SendMci($"open \"{eatFile}\" alias sfx_eat");
-                    SendMci($"setaudio sfx_eat volume to {SfxVolume}");
-                    isEatLoaded = true;
+                    playerEat.Play();
                 }
-
-                SendMci("play sfx_eat from 0");
+                else
+                {
+                    string eatFile = GetSoundPath("eatsnake.wav");
+                    if (!File.Exists(eatFile)) return;
+                    if (!isEatLoaded)
+                    {
+                        SendMci("close sfx_eat");
+                        SendMci($"open \"{eatFile}\" alias sfx_eat");
+                        SendMci($"setaudio sfx_eat volume to {SfxVolume}");
+                        isEatLoaded = true;
+                    }
+                    SendMci("play sfx_eat from 0");
+                }
             }
             catch
             {
@@ -177,25 +221,28 @@ namespace SnackGame3.Utils
 
             try
             {
-                string dieFile = GetSoundPath("eatdie.wav");
-                if (!File.Exists(dieFile)) return;
-
-                if (!isDieLoaded)
+                if (playerDie != null)
                 {
-                    SendMci("close sfx_die");
-                    SendMci($"open \"{dieFile}\" alias sfx_die");
-                    SendMci($"setaudio sfx_die volume to 750");
-                    isDieLoaded = true;
+                    playerDie.Play();
                 }
-
-                SendMci("play sfx_die from 0");
+                else
+                {
+                    string dieFile = GetSoundPath("eatdie.wav");
+                    if (!File.Exists(dieFile)) return;
+                    if (!isDieLoaded)
+                    {
+                        SendMci("close sfx_die");
+                        SendMci($"open \"{dieFile}\" alias sfx_die");
+                        SendMci($"setaudio sfx_die volume to 750");
+                        isDieLoaded = true;
+                    }
+                    SendMci("play sfx_die from 0");
+                }
             }
             catch
             {
             }
         }
-
-        public static int ButtonVolume { get; set; } = 650;
 
         /// <summary>
         /// Phát âm thanh khi bấm nút (nutbam.wav)
@@ -206,18 +253,23 @@ namespace SnackGame3.Utils
 
             try
             {
-                string btnFile = GetSoundPath("nutbam.wav");
-                if (!File.Exists(btnFile)) return;
-
-                if (!isButtonLoaded)
+                if (playerBtn != null)
                 {
-                    SendMci("close sfx_btn");
-                    SendMci($"open \"{btnFile}\" alias sfx_btn");
-                    SendMci($"setaudio sfx_btn volume to {ButtonVolume}");
-                    isButtonLoaded = true;
+                    playerBtn.Play();
                 }
-
-                SendMci("play sfx_btn from 0");
+                else
+                {
+                    string btnFile = GetSoundPath("nutbam.wav");
+                    if (!File.Exists(btnFile)) return;
+                    if (!isButtonLoaded)
+                    {
+                        SendMci("close sfx_btn");
+                        SendMci($"open \"{btnFile}\" alias sfx_btn");
+                        SendMci($"setaudio sfx_btn volume to {ButtonVolume}");
+                        isButtonLoaded = true;
+                    }
+                    SendMci("play sfx_btn from 0");
+                }
             }
             catch
             {
@@ -231,6 +283,10 @@ namespace SnackGame3.Utils
         {
             try
             {
+                playerEat?.Dispose();
+                playerDie?.Dispose();
+                playerBtn?.Dispose();
+
                 SendMci("close bgm");
                 SendMci("close sfx_eat");
                 SendMci("close sfx_die");
