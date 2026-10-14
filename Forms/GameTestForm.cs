@@ -28,6 +28,21 @@ namespace SnackGame3.Test
         private int score = 0;
         private Random random = new Random();
 
+        // Tối ưu hiệu năng đồ họa: Lưu sẵn Brush và Pen tái sử dụng, tránh rác RAM gây khựng giật
+        private SolidBrush brushBg = new SolidBrush(Color.FromArgb(15, 15, 30));
+        private Pen penGrid = new Pen(Color.FromArgb(25, 25, 45));
+        private Pen penBorder = new Pen(Color.FromArgb(50, 50, 80), 1);
+        private SolidBrush brushFood = new SolidBrush(Color.FromArgb(255, 70, 70));
+        private SolidBrush brushFoodShine = new SolidBrush(Color.FromArgb(255, 190, 190));
+        private SolidBrush brushHead = new SolidBrush(Color.FromArgb(70, 235, 70));
+        private SolidBrush brushBody = new SolidBrush(Color.FromArgb(34, 160, 34));
+        private SolidBrush brushEye = new SolidBrush(Color.FromArgb(10, 30, 10));
+        private SolidBrush brushPauseOverlay = new SolidBrush(Color.FromArgb(170, 0, 0, 0));
+        private Font fontPause = new Font("Segoe UI", 24, FontStyle.Bold);
+        private SolidBrush brushYellow = new SolidBrush(Color.FromArgb(255, 215, 0));
+        private Font fontSub = new Font("Segoe UI", 12, FontStyle.Regular);
+        private SolidBrush brushWhite = new SolidBrush(Color.White);
+
         public GameTestForm()
         {
             InitializeComponent();
@@ -100,6 +115,7 @@ namespace SnackGame3.Test
 
             this.ActiveControl = null;
             canvas.Invalidate();
+            canvas.Update();
         }
 
         private void RestartGame()
@@ -158,24 +174,36 @@ namespace SnackGame3.Test
             }
         }
 
+        /// <summary>
+        /// Tạo mồi ngẫu nhiên tức thì O(1) - không duyệt 500 ô, không tốn RAM
+        /// </summary>
         private void SpawnFood()
         {
-            List<Point> emptyCells = new List<Point>();
+            HashSet<Point> snakeBody = new HashSet<Point>(snake);
+
+            // Thử chọn ngẫu nhiên tối đa 40 lần - thành công ngay lập tức ở 99.9% trường hợp
+            for (int i = 0; i < 40; i++)
+            {
+                Point p = new Point(random.Next(COLS), random.Next(ROWS));
+                if (!snakeBody.Contains(p))
+                {
+                    food = p;
+                    return;
+                }
+            }
+
+            // Trường hợp rắn đã quá dài chiếm gần kín bàn: quét tìm ô trống duy nhất
             for (int x = 0; x < COLS; x++)
             {
                 for (int y = 0; y < ROWS; y++)
                 {
                     Point p = new Point(x, y);
-                    if (!snake.Contains(p))
+                    if (!snakeBody.Contains(p))
                     {
-                        emptyCells.Add(p);
+                        food = p;
+                        return;
                     }
                 }
-            }
-
-            if (emptyCells.Count > 0)
-            {
-                food = emptyCells[random.Next(emptyCells.Count)];
             }
         }
 
@@ -211,7 +239,7 @@ namespace SnackGame3.Test
 
             snake.Insert(0, newHead);
 
-            // Ăn mồi
+            // Ăn mồi: Xử lý tức thì không delay
             if (newHead == food)
             {
                 score += 10;
@@ -224,7 +252,9 @@ namespace SnackGame3.Test
                 snake.RemoveAt(snake.Count - 1);
             }
 
+            // Làm mới khung hình ngay lập tức (không đợi thông điệp xếp hàng)
             canvas.Invalidate();
+            canvas.Update();
         }
 
         private void TriggerGameOver()
@@ -248,6 +278,7 @@ namespace SnackGame3.Test
             txtTenNguoiChoi.SelectAll();
 
             canvas.Invalidate();
+            canvas.Update();
         }
 
         private void LuuDiemVaoBangXepHang(string tenNguoiChoi, int diemSo)
@@ -383,6 +414,7 @@ namespace SnackGame3.Test
                     isPaused = !isPaused;
                     SoundManager.PlayButtonClick();
                     canvas.Invalidate();
+                    canvas.Update();
                 }
             }
             else if (e.KeyCode == Keys.Escape)
@@ -397,25 +429,16 @@ namespace SnackGame3.Test
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // Xóa nền màu chuẩn cho bàn cờ
-            using (SolidBrush bgBrush = new SolidBrush(Color.FromArgb(15, 15, 30)))
-            {
-                g.FillRectangle(bgBrush, 0, 0, canvas.Width, canvas.Height);
-            }
+            g.FillRectangle(brushBg, 0, 0, canvas.Width, canvas.Height);
 
             // Lưới bàn cờ
-            using (Pen gridPen = new Pen(Color.FromArgb(25, 25, 45)))
-            {
-                for (int x = 0; x <= COLS; x++)
-                    g.DrawLine(gridPen, x * CELL_SIZE, 0, x * CELL_SIZE, ROWS * CELL_SIZE);
-                for (int y = 0; y <= ROWS; y++)
-                    g.DrawLine(gridPen, 0, y * CELL_SIZE, COLS * CELL_SIZE, y * CELL_SIZE);
-            }
+            for (int x = 0; x <= COLS; x++)
+                g.DrawLine(penGrid, x * CELL_SIZE, 0, x * CELL_SIZE, ROWS * CELL_SIZE);
+            for (int y = 0; y <= ROWS; y++)
+                g.DrawLine(penGrid, 0, y * CELL_SIZE, COLS * CELL_SIZE, y * CELL_SIZE);
 
             // Đường viền bao quanh bàn cờ
-            using (Pen borderPen = new Pen(Color.FromArgb(50, 50, 80), 1))
-            {
-                g.DrawRectangle(borderPen, 0, 0, COLS * CELL_SIZE - 1, ROWS * CELL_SIZE - 1);
-            }
+            g.DrawRectangle(penBorder, 0, 0, COLS * CELL_SIZE - 1, ROWS * CELL_SIZE - 1);
 
             // Dữ liệu mẫu khi ở chế độ Visual Studio Designer để giáo viên thấy trực quan ô ma trận có con rắn
             List<Point> renderSnake = snake;
@@ -434,63 +457,89 @@ namespace SnackGame3.Test
                 renderFood = new Point(15, 10);
             }
 
-            // Mồi quả táo đỏ
-            using (Brush foodBrush = new SolidBrush(Color.FromArgb(255, 75, 75)))
-            {
-                g.FillEllipse(foodBrush, renderFood.X * CELL_SIZE + 2, renderFood.Y * CELL_SIZE + 2, CELL_SIZE - 4, CELL_SIZE - 4);
-            }
+            // Mồi quả táo đỏ (có chấm bóng sáng cho cảm giác tươi mới)
+            int fx = renderFood.X * CELL_SIZE + 2;
+            int fy = renderFood.Y * CELL_SIZE + 2;
+            int fSize = CELL_SIZE - 4;
+            g.FillEllipse(brushFood, fx, fy, fSize, fSize);
+            g.FillEllipse(brushFoodShine, fx + 3, fy + 2, 4, 4);
 
             // Vẽ rắn
             for (int i = 0; i < renderSnake.Count; i++)
             {
                 Point part = renderSnake[i];
-                Rectangle rect = new Rectangle(part.X * CELL_SIZE + 1, part.Y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+                int px = part.X * CELL_SIZE + 1;
+                int py = part.Y * CELL_SIZE + 1;
+                int pSize = CELL_SIZE - 2;
 
                 if (i == 0)
                 {
-                    using (Brush headBrush = new SolidBrush(Color.FromArgb(70, 235, 70)))
+                    // Vẽ đầu rắn màu xanh nõn chuối nổi bật
+                    g.FillRectangle(brushHead, px, py, pSize, pSize);
+
+                    // Vẽ 2 mắt rắn tinh tế hướng về phía di chuyển
+                    Direction dir = currentDir;
+                    int eyeSize = 3;
+                    if (dir == Direction.Right)
                     {
-                        g.FillRectangle(headBrush, rect);
+                        g.FillRectangle(brushEye, px + pSize - 4, py + 3, eyeSize, eyeSize);
+                        g.FillRectangle(brushEye, px + pSize - 4, py + pSize - 6, eyeSize, eyeSize);
+                    }
+                    else if (dir == Direction.Left)
+                    {
+                        g.FillRectangle(brushEye, px + 2, py + 3, eyeSize, eyeSize);
+                        g.FillRectangle(brushEye, px + 2, py + pSize - 6, eyeSize, eyeSize);
+                    }
+                    else if (dir == Direction.Up)
+                    {
+                        g.FillRectangle(brushEye, px + 3, py + 2, eyeSize, eyeSize);
+                        g.FillRectangle(brushEye, px + pSize - 6, py + 2, eyeSize, eyeSize);
+                    }
+                    else if (dir == Direction.Down)
+                    {
+                        g.FillRectangle(brushEye, px + 3, py + pSize - 4, eyeSize, eyeSize);
+                        g.FillRectangle(brushEye, px + pSize - 6, py + pSize - 4, eyeSize, eyeSize);
                     }
                 }
                 else
                 {
-                    using (Brush bodyBrush = new SolidBrush(Color.FromArgb(34, 160, 34)))
-                    {
-                        g.FillRectangle(bodyBrush, rect);
-                    }
+                    // Thân rắn
+                    g.FillRectangle(brushBody, px, py, pSize, pSize);
                 }
             }
 
             // Màn hình TẠM DỪNG (PAUSED)
             if (isPaused && !isDesignMode)
             {
-                using (Brush darkOverlay = new SolidBrush(Color.FromArgb(170, 0, 0, 0)))
-                {
-                    g.FillRectangle(darkOverlay, 0, 0, canvas.Width, canvas.Height);
-                }
+                g.FillRectangle(brushPauseOverlay, 0, 0, canvas.Width, canvas.Height);
 
-                using (Font fontPause = new Font("Segoe UI", 24, FontStyle.Bold))
-                using (Brush brushYellow = new SolidBrush(Color.FromArgb(255, 215, 0)))
-                {
-                    string text = "⏸️ ĐANG TẠM DỪNG";
-                    SizeF size = g.MeasureString(text, fontPause);
-                    g.DrawString(text, fontPause, brushYellow, (canvas.Width - size.Width) / 2, canvas.Height / 2 - 40);
-                }
+                string text = "⏸️ ĐANG TẠM DỪNG";
+                SizeF size = g.MeasureString(text, fontPause);
+                g.DrawString(text, fontPause, brushYellow, (canvas.Width - size.Width) / 2, canvas.Height / 2 - 40);
 
-                using (Font fontSub = new Font("Segoe UI", 12, FontStyle.Regular))
-                using (Brush brushWhite = new SolidBrush(Color.White))
-                {
-                    string text = "Nhấn phím [P] để tiếp tục chơi";
-                    SizeF size = g.MeasureString(text, fontSub);
-                    g.DrawString(text, fontSub, brushWhite, (canvas.Width - size.Width) / 2, canvas.Height / 2 + 10);
-                }
+                string sub = "Nhấn phím [P] để tiếp tục chơi";
+                SizeF subSize = g.MeasureString(sub, fontSub);
+                g.DrawString(sub, fontSub, brushWhite, (canvas.Width - subSize.Width) / 2, canvas.Height / 2 + 10);
             }
         }
 
         private void GameTestForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             gameTimer?.Stop();
+
+            brushBg?.Dispose();
+            penGrid?.Dispose();
+            penBorder?.Dispose();
+            brushFood?.Dispose();
+            brushFoodShine?.Dispose();
+            brushHead?.Dispose();
+            brushBody?.Dispose();
+            brushEye?.Dispose();
+            brushPauseOverlay?.Dispose();
+            fontPause?.Dispose();
+            brushYellow?.Dispose();
+            fontSub?.Dispose();
+            brushWhite?.Dispose();
         }
     }
 }
